@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"  
+    xmlns:context="http://www.springframework.org/schema/context"  
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:task="http://www.springframework.org/schema/task"  
+    xsi:schemaLocation="http://www.springframework.org/schema/beans    
+                        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd    
+                        http://www.springframework.org/schema/context    
+                        http://www.springframework.org/schema/context/spring-context-3.1.xsd    
+                        http://www.springframework.org/schema/mvc    
+                        http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+                        http://www.springframework.org/schema/task 
+                        http://www.springframework.org/schema/task/spring-task-4.0.xsd">
+                          
+    <!-- 自动扫描 -->  
+    <context:component-scan base-package="cn.zltaxt" />  
+    <!-- 引入配置文件 -->  
+    <bean id="propertyConfigurer"  
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
+        <property name="location" value="classpath:jdbc.properties" />  
+    </bean>  
+  
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"  
+        destroy-method="close">  
+        <property name="driverClassName" value="${driver}" />  
+        <property name="url" value="${url}" />  
+        <property name="username" value="${username}" />  
+        <property name="password" value="${password}" />  
+        <!-- 设定最大连接数  -->
+
+       <property name="maxActive"><value>500</value></property>
+
+       <!-- 设定最大空闲时间（毫秒） -->
+
+       <property name="maxIdle"><value>10000</value></property>
+
+       <!-- 设定最大等待时间（毫秒） -->
+
+       <property name="maxWait"><value>1000</value></property>
+
+       <!-- 超时自动收回 -->
+
+       <property name="removeAbandoned"><value>true</value></property>
+
+       <!--
+
+                  超时时间(以秒数为单位)设置超时时间有一个要注意的地方，
+
+                  超时时间=现在的时间-程序中创建Connection的时间，如果
+
+                  maxActive比较大，比如超过100，那么removeAbandonedTimeout
+
+                  可以设置长一点比如180， 也就是三分钟无响应的连接进行回收，
+
+                  当然应用的不同设置长度也不同。
+
+       -->
+
+       <property name="removeAbandonedTimeout"><value>60</value></property>
+
+       <!-- 在自动回收超时连接的时候打印连接的超时错误 -->
+
+       <property name="logAbandoned"><value>true</value></property> 
+       
+       <property name="testOnBorrow"><value>true</value></property>
+       <property name="testOnReturn"><value>true</value></property>
+       <property name="testWhileIdle"><value>true</value></property>
+		<!-- 该选项用来验证数据库连接的有效性 -->
+		<property name="validationQuery">
+			<value>SELECT 1 </value>
+		</property>
+    </bean>  
+  
+    <!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->  
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">  
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>  
+        <!-- 自动扫描mapping.xml文件 -->  
+        <property name="mapperLocations" value="classpath:cn/zskxt/mapping/*.xml"></property>  
+    </bean>  
+  
+    <!-- DAO接口所在包名，Spring会自动查找其下的类 -->  
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">  
+        <property name="basePackage" value="cn.zskxt.dao" />  
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>  
+    </bean>  
+  
+    <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->  
+    <bean id="transactionManager"  
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+        <property name="dataSource" ref="dataSource" />  
+    </bean>  
+  
+</beans>  
